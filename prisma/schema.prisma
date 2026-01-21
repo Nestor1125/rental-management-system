@@ -16,6 +16,7 @@ model User {
   address   String?
   latitude  Float?
   longitude Float?
+  verified  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // relations
@@ -31,6 +32,7 @@ model Property {
   address    String?
   latitude   Float?
   longitude  Float?
+  archived   Boolean @default(false)
   units      Unit[]
   createdAt  DateTime @default(now())
 }
@@ -55,6 +57,17 @@ model Lease {
   endDate    DateTime?
   rentAmount Float?
   createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
 }
 
 enum Role {
