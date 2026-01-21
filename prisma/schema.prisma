@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(TENANT)
+  address   String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // relations
+  properties Property[] @relation("LandlordProperties")
+  leases Lease[] @relation("TenantLeases")
+}
+
+model Property {
+  id         String  @id @default(cuid())
+  landlord   User    @relation(fields: [landlordId], references: [id], name: "LandlordProperties")
+  landlordId String
+  name       String
+  address    String?
+  latitude   Float?
+  longitude  Float?
+  units      Unit[]
+  createdAt  DateTime @default(now())
+}
+
+model Unit {
+  id         String @id @default(cuid())
+  property   Property @relation(fields: [propertyId], references: [id])
+  propertyId String
+  unitNumber String
+  rentAmount Float
+  status     UnitStatus @default(AVAILABLE)
+  leases     Lease[]
+}
+
+model Lease {
+  id         String @id @default(cuid())
+  unit       Unit   @relation(fields: [unitId], references: [id])
+  unitId     String
+  tenant     User?  @relation(fields: [tenantId], references: [id], name: "TenantLeases")
+  tenantId   String?
+  startDate  DateTime?
+  endDate    DateTime?
+  rentAmount Float?
+  createdAt  DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  LANDLORD
+  TENANT
+}
+
+enum UnitStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+}
